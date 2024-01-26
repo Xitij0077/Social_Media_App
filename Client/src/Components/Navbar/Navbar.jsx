@@ -12,9 +12,11 @@ import SearchIcon from "@mui/icons-material/Search";
 import { Link } from "react-router-dom";
 import sociogramSvg from "./../../../public/sociogram-original.svg";
 import { DarkModeContext } from "../../Context/DarkModeContext";
+import { AuthContext } from "../../Context/AuthContext";
 
 const Navbar = () => {
 	const { toggle, darkMode } = useContext(DarkModeContext);
+	const { currentUser } = useContext(AuthContext);
 
 	const svgStyle = {
 		width: "115px",
@@ -54,11 +56,8 @@ const Navbar = () => {
 				<EmailIcon />
 				<CircleNotificationsIcon />
 				<div className="user">
-					<img
-						src="https://img.freepik.com/free-photo/people-celebrating-new-year-s-eve_23-2151070716.jpg?t=st=1706011558~exp=1706015158~hmac=1114a6033f888cd795d065bf7ca09edf3c0896077a9239a3ca80eca2e61957f5&w=826"
-						alt=""
-					/>
-					<span>xitij.G</span>
+					<img src={currentUser.profilePic} alt="" />
+					<span>{currentUser.name}</span>
 				</div>
 			</div>
 		</div>
