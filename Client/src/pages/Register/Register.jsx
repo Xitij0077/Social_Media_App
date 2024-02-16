@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import "./Register.scss";
 import sociogram from "./../../../public/sociogram.svg";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 const svgStyle = {
 	width: "100%",
@@ -11,6 +12,33 @@ const svgStyle = {
 	// padding: "-5px", // Add padding
 };
 const Register = () => {
+	// REQUEST API
+	const [inputs, setInputs] = useState({
+		username: "",
+		email: "",
+		password: "",
+		name: "",
+	});
+
+	const [error, setError] = useState(null);
+
+	const handleChange = (e) => {
+		setInputs((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+	};
+
+	console.log(inputs);
+
+	const handleClick = async (e) => {
+		e.preventDefault();
+
+		try {
+			await axios.post("http://localhost:8800/api/auth/register", inputs);
+		} catch (error) {
+			setError(error.response.data);
+		}
+	};
+
+	console.log(error);
 	return (
 		<div className="register">
 			<div className="card">
@@ -30,11 +58,32 @@ const Register = () => {
 				<div className="right">
 					<h1>Register</h1>
 					<form>
-						<input type="text" placeholder="Username" />
-						<input type="email" placeholder="Email" />
-						<input type="password" placeholder="Password" />
-						<input type="text" placeholder="Name" />
-						<button>Register</button>
+						<input
+							type="text"
+							placeholder="Username"
+							name="username"
+							onChange={handleChange}
+						/>
+						<input
+							type="email"
+							placeholder="Email"
+							name="email"
+							onChange={handleChange}
+						/>
+						<input
+							type="password"
+							placeholder="Password"
+							name="password"
+							onChange={handleChange}
+						/>
+						<input
+							type="text"
+							placeholder="Name"
+							name="name"
+							onChange={handleChange}
+						/>
+						{error && error}
+						<button onClick={handleClick}>Register</button>
 					</form>
 				</div>
 			</div>
