@@ -1,46 +1,70 @@
-import React from "react";
-import "./Comments.scss";
-import { useContext } from "react";
-import { AuthContext } from "../../Context/AuthContext";
+import { useContext, useState } from "react";
+import "./comments.scss";
+import { AuthContext } from "../../context/authContext";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { makeRequest } from "../../axios";
+import moment from "moment";
 
-const Comments = () => {
+const Comments = ({ postId }) => {
+	const [desc, setDesc] = useState("");
 	const { currentUser } = useContext(AuthContext);
-	const comments = [
-		{
-			id: 1,
-			name: "Kshitij Gudekar",
-			userId: 1,
-			profilePicture:
-				"https://img.freepik.com/free-photo/3d-portrait-happy-friends_23-2150793833.jpg?t=st=1706273236~exp=1706276836~hmac=4e10ef55903e8a8a5c61d8ddd7a8614b0c0404bf54957789b35dd4d5b49d2725&w=360",
-			desc: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Fugiat, unde!",
-		},
 
-		{
-			id: 2,
-			name: "Xitij Gudekar",
-			userId: 2,
-			profilePicture:
-				"https://img.freepik.com/free-photo/3d-portrait-happy-friends_23-2150793833.jpg?t=st=1706273236~exp=1706276836~hmac=4e10ef55903e8a8a5c61d8ddd7a8614b0c0404bf54957789b35dd4d5b49d2725&w=360",
-			desc: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Fugiat, unde!",
-		},
-	];
+	const { isLoading, error, data } = useQuery({
+		queryKey: ["comments"],
+		queryFn: () =>
+			makeRequest.get("/comments?postId=" + postId).then((res) => {
+				return res.data;
+			}),
+	});
+
+	// const queryClient = useQueryClient();
+
+	// const mutation = useMutation(
+	// 	(newComment) => {
+	// 		return makeRequest.post("/comments", newComment);
+	// 	},
+	// 	{
+	// 		onSuccess: () => {
+	// 			// Invalidate and refetch
+	// 			queryClient.invalidateQueries(["comments"]);
+	// 		},
+	// 	}
+	// );
+
+	// const handleClick = async (e) => {
+	// 	e.preventDefault();
+	// 	mutation.mutate({ desc, postId });
+	// 	setDesc("");
+	// };
+
 	return (
 		<div className="comments">
 			<div className="write">
-				<img src={currentUser.profilePic} alt="" />
-				<input type="text" placeholder="Write a comment" />
+				<img src={"/upload/" + currentUser.profilePic} alt="" />
+				<input
+					type="text"
+					placeholder="write a comment"
+					value={desc}
+					onChange={(e) => setDesc(e.target.value)}
+				/>
 				<button>Send</button>
 			</div>
-			{comments.map((comment) => (
-				<div className="comment">
-					<img src={comment.profilePicture} alt="" />
-					<div className="info">
-						<span>{comment.name}</span>
-						<p>{comment.desc}</p>
-					</div>
-					<span className="date">1 hour ago</span>
-				</div>
-			))}
+			{error
+				? "Something went wrong"
+				: isLoading
+				? "loading"
+				: data.map((comment) => (
+						<div className="comment">
+							<img src={"/upload/" + comment.profilePic} alt="" />
+							<div className="info">
+								<span>{comment.name}</span>
+								<p>{comment.desc}</p>
+							</div>
+							<span className="date">
+								{moment(comment.createdAt).fromNow()}
+							</span>
+						</div>
+				  ))}
 		</div>
 	);
 };
