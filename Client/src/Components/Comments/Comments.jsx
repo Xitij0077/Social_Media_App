@@ -1,8 +1,8 @@
 import { useContext, useState } from "react";
 import "./comments.scss";
-import { AuthContext } from "../../context/authContext";
+import { AuthContext } from "../../Context/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { makeRequest } from "../../axios";
+import { makeRequest } from "../../Axios";
 import moment from "moment";
 
 const Comments = ({ postId }) => {
@@ -17,25 +17,20 @@ const Comments = ({ postId }) => {
 			}),
 	});
 
-	// const queryClient = useQueryClient();
+	const queryClient = useQueryClient();
 
-	// const mutation = useMutation(
-	// 	(newComment) => {
-	// 		return makeRequest.post("/comments", newComment);
-	// 	},
-	// 	{
-	// 		onSuccess: () => {
-	// 			// Invalidate and refetch
-	// 			queryClient.invalidateQueries(["comments"]);
-	// 		},
-	// 	}
-	// );
+	const mutation = useMutation({
+		mutationFn: (newComment) => makeRequest.post("/comments", newComment),
+		onSuccess: () => {
+			queryClient.invalidateQueries("comments");
+		},
+	});
 
-	// const handleClick = async (e) => {
-	// 	e.preventDefault();
-	// 	mutation.mutate({ desc, postId });
-	// 	setDesc("");
-	// };
+	const handleClick = async (e) => {
+		e.preventDefault();
+		mutation.mutate({ desc, postId });
+		setDesc("");
+	};
 
 	return (
 		<div className="comments">
@@ -47,7 +42,7 @@ const Comments = ({ postId }) => {
 					value={desc}
 					onChange={(e) => setDesc(e.target.value)}
 				/>
-				<button>Send</button>
+				<button onClick={handleClick}>Send</button>
 			</div>
 			{error
 				? "Something went wrong"
