@@ -3,6 +3,7 @@ import authRoutes from "./Routes/auth.js";
 import userRoutes from "./Routes/users.js";
 import postRoutes from "./Routes/posts.js";
 import likeRoutes from "./Routes/likes.js";
+import relationshipRoutes from "./Routes/relationships.js";
 import commentRoutes from "./Routes/comments.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
@@ -46,6 +47,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/likes", likeRoutes);
 app.use("/api/comments", commentRoutes);
+app.use("/api/relationships", relationshipRoutes);
 
 const PORT = 8800;
 app.listen(PORT, () => {

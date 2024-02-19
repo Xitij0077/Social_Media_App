@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import "./Profile.scss";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
@@ -10,62 +10,114 @@ import LanguageIcon from "@mui/icons-material/Language";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import ExpandCircleDownRoundedIcon from "@mui/icons-material/ExpandCircleDownRounded";
 import Posts from "../../Components/Posts/Posts";
+import { makeRequest } from "../../Axios";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "react-router-dom";
+import { AuthContext } from "../../Context/AuthContext";
 
 const Profile = () => {
+	const userId = parseInt(useLocation().pathname.split("/")[2]);
+	// const [openUpdate, setOpenUpdate] = useState(false);
+
+	const { currentUser } = useContext(AuthContext);
+
+	const { isLoading, error, data } = useQuery({
+		queryKey: ["user"],
+		queryFn: () =>
+			makeRequest.get("/users/find/" + userId).then((res) => {
+				return res.data;
+			}),
+	});
+
+	const { isLoading: rIsLoading, data: relationshipData } = useQuery({
+		queryKey: ["relationship"],
+		queryFn: () =>
+			makeRequest.get("/relationships?followedUserId=" + userId).then((res) => {
+				return res.data;
+			}),
+	});
+
+	const queryClient = useQueryClient();
+
+	const mutation = useMutation({
+		mutationFn: (following) => {
+			if (following)
+				return makeRequest.delete("/relationships?userId=" + userId);
+			return makeRequest.post("/relationships", { userId });
+		},
+
+		onSuccess: () => {
+			// Invalidate and refetch
+			queryClient.invalidateQueries(["relationship"]);
+		},
+	});
+	const handleFollow = () => {
+		mutation.mutate(relationshipData.includes(currentUser.id));
+	};
 	return (
 		<div className="profile">
-			<div className="images">
-				<img
-					src="https://img.freepik.com/free-photo/painting-mountain-lake-with-mountain-background_188544-9126.jpg?w=1060&t=st=1706336230~exp=1706336830~hmac=d3b0460e1f10aa348bacae7290b1c5924e68ea0777aac36e9f539cac06f33cad"
-					alt=""
-					className="cover"
-				/>
-				<img
-					src="https://img.freepik.com/free-photo/person-playing-3d-video-games-device_23-2151005751.jpg?t=st=1706313760~exp=1706317360~hmac=d8dacd51e341043bbd03480bd535e729a914d1fe67441dfb43f42f20288dc96d&w=900"
-					alt=""
-					className="profilePic"
-				/>
-			</div>
-			<div className="profileContainer">
-				<div className="uInfo">
-					<div className="left">
-						<a href="http://facebook.com">
-							<FacebookIcon fontSize="large" />
-						</a>
-						<a href="http://facebook.com">
-							<InstagramIcon fontSize="large" />
-						</a>
-						<a href="http://facebook.com">
-							<XIcon fontSize="large" />
-						</a>
-						<a href="http://facebook.com">
-							<LinkedInIcon fontSize="large" />
-						</a>
-						<a href="http://facebook.com">
-							<PinterestIcon fontSize="large" />
-						</a>
+			{isLoading ? (
+				"Loading"
+			) : (
+				<>
+					<div className="images">
+						<img src={data.coverPic} alt="" className="cover" />
+						<img src={data.profilePic} alt="" className="profilePic" />
 					</div>
-					<div className="center">
-						<span>Kshitij Gudekar</span>
-						<div className="info">
-							<div className="item">
-								<PlaceIcon style={{ color: "#C70039" }} />
-								<span>India</span>
+					<div className="profileContainer">
+						<div className="uInfo">
+							<div className="left">
+								<a href="http://facebook.com">
+									<FacebookIcon fontSize="large" />
+								</a>
+								<a href="http://facebook.com">
+									<InstagramIcon fontSize="large" />
+								</a>
+								<a href="http://facebook.com">
+									<XIcon fontSize="large" />
+								</a>
+								<a href="http://facebook.com">
+									<LinkedInIcon fontSize="large" />
+								</a>
+								<a href="http://facebook.com">
+									<PinterestIcon fontSize="large" />
+								</a>
 							</div>
-							<div className="item">
-								<LanguageIcon style={{ color: "#5271ff" }} />
-								<span>xitij.io</span>
+							<div className="center">
+								<span>{data.name}</span>
+								<div className="info">
+									<div className="item">
+										<PlaceIcon style={{ color: "#C70039" }} />
+										<span>{data.city}</span>
+									</div>
+									<div className="item">
+										<LanguageIcon style={{ color: "#5271ff" }} />
+										<span>{data.website}</span>
+									</div>
+								</div>
+								{rIsLoading ? (
+									"Loading"
+								) : userId === currentUser.id ? (
+									<button>Update</button>
+								) : (
+									<button onClick={handleFollow}>
+										{relationshipData.includes(currentUser.id)
+											? "Following"
+											: "Follow"}
+									</button>
+								)}
+							</div>
+							<div className="right">
+								<EmailOutlinedIcon />
+								<ExpandCircleDownRoundedIcon
+									style={{ color: "cornflowerblue" }}
+								/>
 							</div>
 						</div>
-						<button>Follow</button>
+						<Posts userId={userId} />
 					</div>
-					<div className="right">
-						<EmailOutlinedIcon />
-						<ExpandCircleDownRoundedIcon style={{ color: "cornflowerblue" }} />
-					</div>
-				</div>
-				<Posts />
-			</div>
+				</>
+			)}
 		</div>
 	);
 };
