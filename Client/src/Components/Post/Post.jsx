@@ -13,6 +13,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AuthContext } from "./../../Context/AuthContext";
 const Post = ({ post }) => {
 	const [commentOpen, setCommentOpen] = useState(false);
+	const [menuOpen, setMenuOpen] = useState(false);
+
 	// TEMPORARY
 
 	const { currentUser } = useContext(AuthContext);
@@ -71,7 +73,13 @@ const Post = ({ post }) => {
 							<span className="date">{moment(post.createdAt).fromNow()}</span>
 						</div>
 					</div>
-					<ExpandCircleDownRoundedIcon style={{ color: "cornflowerblue " }} />
+					<ExpandCircleDownRoundedIcon
+						style={{ color: "cornflowerblue " }}
+						onClick={() => setMenuOpen(!menuOpen)}
+					/>
+					{menuOpen && post.userId === currentUser.id && (
+						<button onClick={handleDelete}>delete</button>
+					)}
 				</div>
 				<div className="content">
 					<p>{post.desc}</p>

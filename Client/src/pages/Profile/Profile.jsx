@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import "./Profile.scss";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
@@ -14,12 +14,13 @@ import { makeRequest } from "../../Axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "react-router-dom";
 import { AuthContext } from "../../Context/AuthContext";
+import Update from "../../Components/Update/Update";
 
 const Profile = () => {
-	const userId = parseInt(useLocation().pathname.split("/")[2]);
-	// const [openUpdate, setOpenUpdate] = useState(false);
-
+	const [openUpdate, setOpenUpdate] = useState(false);
 	const { currentUser } = useContext(AuthContext);
+
+	const userId = parseInt(useLocation().pathname.split("/")[2]);
 
 	const { isLoading, error, data } = useQuery({
 		queryKey: ["user"],
@@ -98,7 +99,7 @@ const Profile = () => {
 								{rIsLoading ? (
 									"Loading"
 								) : userId === currentUser.id ? (
-									<button>Update</button>
+									<button onClick={() => setOpenUpdate(true)}>update</button>
 								) : (
 									<button onClick={handleFollow}>
 										{relationshipData.includes(currentUser.id)
@@ -118,6 +119,7 @@ const Profile = () => {
 					</div>
 				</>
 			)}
+			{openUpdate && <Update setOpenUpdate={setOpenUpdate} user={data} />}
 		</div>
 	);
 };
